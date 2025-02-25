@@ -1,0 +1,14 @@
+{
+  "name": "clash-backend-2",
+  "version": "1.0.0",
+  "description": "Maicol Condori Backend Clash of Clans",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Maicol Condori",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
