@@ -9,6 +9,10 @@
   "author": "Maicol Condori",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express-validator": "^7.2.1",
+    "node-fetch": "^3.3.2"
   }
 }
