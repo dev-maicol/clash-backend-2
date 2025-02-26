@@ -30,9 +30,12 @@ app.get('/v1/clans/war/:tag', async (req, res) => {
     })
     // console.log(response);
 
-    if (!response.ok) {
-      throw new Error(`Error en la API: ${response.status}`)
-    }
+    // if (!response.ok) {
+    //   console.log('erroooor:::', response.status);
+      
+    //   throw new Error(`Error en la API: ${response.status}`)
+    // }
+    
     const data = await response.json()
     res.json(data)
 
@@ -46,7 +49,7 @@ app.get('/v1/clans/capital/:tag', async (req, res) => {
   try {
     const tag = req.params.tag
     const url = URL_BASE + 'clans/%23' + tag + '/capitalraidseasons?limit=1'
-    console.log({url});
+    // console.log({url});
     
     const response = await fetch(url, {
       headers: {
