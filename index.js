@@ -45,9 +45,10 @@ app.get('/v1/clans/war/:tag', async (req, res) => {
 
 })
 
-app.get('/v1/clans/capital/:tag', async (req, res) => {
+app.get('/v1/clans/capital/:tag/:clanSelect', async (req, res) => {
   try {
     const tag = req.params.tag
+    const clanSelect = req.params.clanSelect
     const url = URL_BASE + 'clans/%23' + tag + '/capitalraidseasons?limit=1'
     // console.log({url});
 
@@ -60,7 +61,8 @@ app.get('/v1/clans/capital/:tag', async (req, res) => {
       throw new Error(`Error en la API: ${response.status}`)
     }
     const data = await response.json()
-    res.json(data)
+    // res.json(data)
+    res.json({ message: getInformationCapital(data, tag, clanSelect) })
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -70,17 +72,7 @@ app.get('/v1/clans/cwl/:tag/:day', async (req, res) => {
   try {
     const tag = req.params.tag
     const day = req.params.day
-    // console.log({tag, day});
     const url = URL_BASE + 'clans/%23' + tag + '/currentwar/leaguegroup'
-    // console.log({url});
-
-    // 1ra url
-    // https://api.clashofclans.com/v1/clans/%23RUG0LC2Q/currentwar/leaguegroup
-
-
-    // 2da url
-    // https://api.clashofclans.com/v1/clanwarleagues/wars/%2389CC2RCP0
-
 
     const response = await fetch(url, {
       headers: {
@@ -120,7 +112,9 @@ app.get('/v1/clans/cwl/:tag/:day', async (req, res) => {
         }
       }
       // res.json(dataResponse)
-      res.json({message:getInformationCWL(dataResponse, tag, day)})
+      // console.log({dataResponse});
+
+      res.json({ message: getInformationCWL(dataResponse, tag, day) })
     }
     // res.json({ message: 'Errorrrrrrr no encontramos la urlWar'})
   } catch (error) {
@@ -128,9 +122,9 @@ app.get('/v1/clans/cwl/:tag/:day', async (req, res) => {
   }
 })
 
-function getInformationCWL(data, tag, day){
-  // console.log(data['clan']);
-  
+function getInformationCWL(data, tag, day) {
+  // console.log(data);
+
   const state = data['state'] // inWar, preparation, warEnded
   const teamSize = data['teamSize']
 
@@ -153,45 +147,98 @@ function getInformationCWL(data, tag, day){
   const hours = Math.floor(timeRes / (1000 * 60 * 60)); // Extrae las horas completas
   const minutes = Math.floor((timeRes % (1000 * 60 * 60)) / (1000 * 60)); // Obtiene los minutos restantes
 
+  // console.log('Antes de obtener clannn...');
+
   let clan = []
-  if(data['clan']['tag'] == '#' + tag){
-    clan = this.data['clan']
-  }else{
-    if(data['opponent']['tag'] == '#' + tag){
+  let starsOpponent = ''
+  if (data['clan']['tag'] == '#' + tag) {
+    clan = data['clan']
+    starsOpponent = data['opponent']['stars']
+  } else {
+    if (data['opponent']['tag'] == '#' + tag) {
       clan = data['opponent']
-    }else{
+      starsOpponent = data['clan']['stars']
+    } else {
       clan = ['Errorroroorr']
     }
   }
+  // console.log('Despues de obtener clannn...');
   // console.log({clan});
   let restante
-  if(timeRes == 0){
+  if (timeRes == 0) {
     restante = 'warEnded'
-  }else{
+  } else {
     restante = hours + 'h ' + minutes + 'm'
   }
-  
-  let respuesta = 
-  '*' + clan['name'] + '*\n' + 
-  '*Information CWL*' + '\n' +
-  '*Day:* ' + day + '\n' + 
-  '*State:* ' + state + '\n' + 
-  '*Stars:* ' + clan['stars'] + '\n' +
-  '*Percentage:* ' + (Math.round(clan['destructionPercentage'] * 100) / 100)  + '%\n' +
-  '*Remaining time:* ' + restante + '\n' + 
-  '*Attacks:* ' + clan['attacks'] + '/' + teamSize + '\n' +
-  '*Remaining attacks:* ' + '\n'
+
+  let respuesta =
+    '```' + clan['name'] + '```\n' +
+    '🛡 *Information CWL*' + '\n' +
+    '📅 *Day:* ' + day + '\n' +
+    '🛠 *State:* ' + state + '\n' +
+    '⭐ *Stars Clan:* ' + clan['stars'] + '\n' +
+    '⭐ *Stars Opponent:* ' + starsOpponent + '\n' +
+    '📊 *Percentage:* ' + (Math.round(clan['destructionPercentage'] * 100) / 100) + '%\n' +
+    '⏳ *Remaining time:* ' + restante + '\n' +
+    '⚔ *Attacks:* ' + clan['attacks'] + '/' + teamSize + '\n' +
+    '🤺 *Remaining attacks:* ' + '\n'
 
   const members = clan['members']
-  for(mem of members){
-    if(!mem['attacks']){
-      respuesta += mem['name'] + ' (' + mem['townhallLevel'] + ')' + '\n'
+  members.sort((a, b) => a.mapPosition - b.mapPosition)
+  for (mem of members) {
+    if (!mem['attacks']) {
+      respuesta += mem['name'] + ' [' + mem['townhallLevel'] + ']' + '\n'
     }
   }
 
-  respuesta += '\n' + '```Clash of Clans```\n```Resistencia ♥```'
+  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Warriors`_'
 
-  return  respuesta
+  return respuesta
+}
+
+function getInformationCapital(data, tag, clanSelect) {
+  // console.log({ data });
+  const dataResume = data['items']['0']
+  const members = dataResume['members']
+  const end = new Date(parseCustomDate(dataResume['endTime']))
+  const now = new Date()
+  const restTime = end.getTime() - now.getTime()
+  // console.log({restTime});
+  
+
+  // Convertir milisegundos a días, horas y minutos
+  const days = Math.floor(restTime / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((restTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((restTime % (1000 * 60 * 60)) / (1000 * 60));
+
+  // Construcción dinámica del formato
+  let formattedTime = "";
+  if(restTime > 0){
+    if (days > 0) formattedTime += `${days}d `;
+    if (hours > 0 || days > 0) formattedTime += `${hours}h `;
+    formattedTime += `${minutes}m`;
+  }else{
+    formattedTime += 'endTime'
+  }
+
+  members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted)
+  // console.log({formattedTime});
+
+  let respuesta =
+    '```' + clanSelect + '```\n' +
+    '🛡 *Information Capital*' + '\n' +
+    '🥇 *Total loot:* ' + dataResume['capitalTotalLoot'] + '\n' +
+    '⏳ *Remaining time:* ' + formattedTime + '\n' +
+    '🗡 *Clan info:* ' + '\n' + 
+    '*Member , Attacks , Loot*' + '\n\n'
+  
+  for(mem of members){
+    respuesta += mem['name'] + ' *,* ' + mem['attacks'] + '/' + (mem['attackLimit'] + mem['bonusAttackLimit']) + ' *,* ' + mem['capitalResourcesLooted'] + '\n'
+  }
+
+  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Warriors`_'
+  
+  return respuesta
 }
 
 function parseCustomDate(dateStr) {
