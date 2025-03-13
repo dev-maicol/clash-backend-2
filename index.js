@@ -53,7 +53,15 @@ app.get('/v1/clans/war/:tag', async (req, res) => {
     // }
 
     const data = await response.json()
-    res.json( { message: getInformationWar(data, tag)})
+    if(data.state == 'notInWar'){
+      res.json({ message: 'Clan not in war' })
+      return
+    }else{
+      res.json( { message: getInformationWar(data, tag)})
+
+    }
+    // console.log({data});
+    
 
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -262,14 +270,17 @@ function getInformationCapital(data, tag, clanSelect) {
     '🥇 *Total loot:* ' + dataResume['capitalTotalLoot'] + '\n' +
     '⏳ *Remaining time:* ' + formattedTime + '\n' +
     '🗡 *Clan info:* ' + '\n' +
-    '*Member , Attacks , Loot*' + '\n\n'
+    '*Pos. Member , Attacks , Loot*' + '\n\n'
+  
+  let counter = 0
 
   for (mem of members) {
-    respuesta += mem['name'] + ' *,* ' + mem['attacks'] + '/' + (mem['attackLimit'] + mem['bonusAttackLimit']) + ' *,* ' + mem['capitalResourcesLooted'] + '\n'
+    counter++
+    respuesta += counter + '. ' + mem['name'] + ' *,* ' + mem['attacks'] + '/' + (mem['attackLimit'] + mem['bonusAttackLimit']) + ' *,* ' + mem['capitalResourcesLooted'] + '\n'
   }
 
   respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Warriors`_'
-  registerConsult(clan['name'], 'Capital')
+  registerConsult(clanSelect, 'Capital')
 
   return respuesta
 }
@@ -321,11 +332,15 @@ function getInformationWar(data, tag) {
     '```' + clan['name'] + '```\n' +
     '🛡 *Information War*' + '\n' +
     '🛠 *State:* ' + state + '\n' +
-    '⭐ *Stars Clan:* ' + clan['stars'] + '\n' +
-    '⭐ *Stars Opponent:* ' + starsOpponent + '\n' +
-    '📊 *Percentage:* ' + (Math.round(clan['destructionPercentage'] * 100) / 100) + '%\n' +
-    '⏳ *Remaining time:* ' + restante + '\n' +
-    '⚔ *Attacks:* ' + clan['attacks'] + '/' + (teamSize * attacksPerMember) + '\n' +
+    '⏳ *Remaining time:* ' + restante + '\n'
+    if(state != 'preparation'){
+      respuesta +=
+      '⭐ *Stars Clan:* ' + clan['stars'] + '\n' +
+      '⭐ *Stars Opponent:* ' + starsOpponent + '\n' +
+      '📊 *Percentage:* ' + (Math.round(clan['destructionPercentage'] * 100) / 100) + '%\n' +
+      '⚔ *Attacks:* ' + clan['attacks'] + '/' + (teamSize * attacksPerMember) + '\n'
+    }
+    respuesta +=
     '🤺 *Remaining attacks:* ' + '\n' + 
     '*Pos. Member [th] , Attacks*' + '\n\n'
 
@@ -337,11 +352,21 @@ function getInformationWar(data, tag) {
     let attacksRest = 0
     if (!mem['attacks']) {
       attacksRest = 2
-      respuesta += mem['mapPosition'] + '. ' + mem['name'] + ' [' + mem['townhallLevel'] + '], ' + attacksRest + '/' + attacksPerMember + '\n'
+      if(state == 'preparation'){
+        respuesta += mem['mapPosition'] + '. ' + mem['name'] + ' [' + mem['townhallLevel'] + ']' + '\n'
+
+      }else{
+        respuesta += mem['mapPosition'] + '. ' + mem['name'] + ' [' + mem['townhallLevel'] + '], ' + attacksRest + '/' + attacksPerMember + '\n'
+      }
     }else{
       attacksRest = attacksPerMember - mem['attacks'].length
       if(attacksRest > 0){
-        respuesta += mem['mapPosition'] + '. ' + mem['name'] + ' [' + mem['townhallLevel'] + '], ' + attacksRest + '/' + attacksPerMember + '\n'
+        if(state == 'preparation'){
+          respuesta += mem['mapPosition'] + '. ' + mem['name'] + ' [' + mem['townhallLevel'] + ']' + '\n'
+        }else{
+          respuesta += mem['mapPosition'] + '. ' + mem['name'] + ' [' + mem['townhallLevel'] + '], ' + attacksRest + '/' + attacksPerMember + '\n'
+
+        }
       }
     }
   }
