@@ -404,7 +404,7 @@ async function verifyConsults(){
     const data = await response.json()
     // console.log(data.length);
     
-    return data.length
+    return data.length + '/' + MAX_CONSULTS
   }catch(error){
     console.log('Error en la verificación de consultas: ', error);
   }
