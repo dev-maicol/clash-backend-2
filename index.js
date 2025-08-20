@@ -10,7 +10,7 @@ const URL_BASE = process.env.URL_BASE
 const URL_BASE_SUPA = process.env.URL_BASE_SUPA
 const API_KEY_SUPA = process.env.API_KEY_SUPA
 
-const MAX_CONSULTS = 150
+const MAX_CONSULTS = 20
 
 app.use(express.json())
 
@@ -230,7 +230,7 @@ function getInformationCWL(data, tag, day) {
     }
   }
 
-  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Masters`_'
+  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Warriors`_'
   registerConsult(clan['name'], 'CWL')
 
   return respuesta
@@ -279,7 +279,7 @@ function getInformationCapital(data, tag, clanSelect) {
     respuesta += counter + '. ' + mem['name'] + ' *,* ' + mem['attacks'] + '/' + (mem['attackLimit'] + mem['bonusAttackLimit']) + ' *,* ' + mem['capitalResourcesLooted'] + '\n'
   }
 
-  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Masters`_'
+  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Warriors`_'
   registerConsult(clanSelect, 'Capital')
 
   return respuesta
@@ -371,7 +371,7 @@ function getInformationWar(data, tag) {
     }
   }
 
-  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Masters`_'
+  respuesta += '\n' + '_`Clash of Clans`_\n_`Community Latin Magic Warriors`_'
   registerConsult(clan['name'], 'War')
   
   return respuesta
