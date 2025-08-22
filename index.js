@@ -10,7 +10,7 @@ const URL_BASE = process.env.URL_BASE
 const URL_BASE_SUPA = process.env.URL_BASE_SUPA
 const API_KEY_SUPA = process.env.API_KEY_SUPA
 
-const MAX_CONSULTS = 20
+const MAX_CONSULTS = 50
 
 app.use(express.json())
 
